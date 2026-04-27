@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import Fireworks from '@/app/components/Fireworks'
 import CelebrationOverlay from '@/app/components/CelebrationOverlay'
 
@@ -122,18 +123,15 @@ export default function ButtonCeremony() {
 
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 text-center pt-10">
-        <p
-          className="text-xs font-medium tracking-[0.35em] uppercase"
-          style={{ color: 'rgba(255,255,255,0.35)' }}
-        >
-          KFUPM Career Fair 2026
-        </p>
-        <h1
-          className="mt-1 text-xl font-semibold"
-          style={{ color: 'rgba(255,255,255,0.75)', direction: 'rtl' }}
-        >
-          افتتاح معرض التوظيف
-        </h1>
+        <Image
+          src="/Centered_Inverted.svg"
+          alt="KFUPM Career Fair 2026 opening"
+          width={300}
+          height={166}
+          priority
+          className="mx-auto h-auto"
+          style={{ width: 'min(34vw, 300px)', opacity: 0.88 }}
+        />
       </div>
 
       {/* Decorative ring behind button */}

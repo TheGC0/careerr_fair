@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import Fireworks from '@/app/components/Fireworks'
 import CelebrationOverlay from '@/app/components/CelebrationOverlay'
 import HandScanImage from '@/app/components/HandScanImage'
@@ -42,9 +43,14 @@ export default function HandCeremony() {
   useEffect(() => {
     const zone = document.getElementById('hand-zone')!
     const sync = (e: TouchEvent) => {
+      const target = e.target
+      if (target instanceof Element && target.closest('a, button')) return
+
       e.preventDefault()
       const pts: TouchPoint[] = Array.from(e.touches).map(t => ({
-        id: t.identifier, x: t.clientX, y: t.clientY,
+        id: t.identifier,
+        x: window.innerWidth > window.innerHeight ? t.clientY : t.clientX,
+        y: window.innerWidth > window.innerHeight ? window.innerWidth - t.clientX : t.clientY,
       }))
       touchCountRef.current = pts.length
       setTouchPoints(pts)
@@ -77,6 +83,7 @@ export default function HandCeremony() {
       className="fixed inset-0 overflow-hidden select-none"
       style={{ background: BG, touchAction: 'none', WebkitUserSelect: 'none' }}
     >
+      <div className="portrait-stage" style={{ background: BG }}>
       {/* ── Decorative arcs (matching KFUPM slide) ── */}
       <svg className="absolute top-0 right-0 pointer-events-none" width="160" height="160" viewBox="0 0 160 160">
         <circle cx="160" cy="0" r="100" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"/>
@@ -99,20 +106,17 @@ export default function HandCeremony() {
         )))}
       </svg>
 
-      {/* Back */}
-      <Link href="/" className="absolute top-6 left-6 text-sm transition-colors"
-        style={{ zIndex: 5, color: 'rgba(255,255,255,0.5)' }}>
-        ← Back
-      </Link>
-
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 text-center pt-10" style={{ zIndex: 5 }}>
-        <p className="text-xs font-semibold tracking-[0.4em] uppercase text-white/50">
-          KFUPM Career Fair 2026
-        </p>
-        <h1 className="mt-1 text-xl font-semibold text-white/85" style={{ direction: 'rtl' }}>
-          افتتاح معرض التوظيف
-        </h1>
+        <Image
+          src="/Centered_Inverted.svg"
+          alt="KFUPM Career Fair 2026 opening"
+          width={300}
+          height={166}
+          priority
+          className="mx-auto h-auto"
+          style={{ width: 'min(34vw, 300px)', opacity: 0.88 }}
+        />
       </div>
 
       {/* Touch feedback dots */}
@@ -135,8 +139,8 @@ export default function HandCeremony() {
         <div
           className="relative"
           style={{
-            width: 'min(72vmin, 780px)',
-            height: 'min(72vmin, 780px)',
+            width: 'min(104vmin, 1120px)',
+            height: 'min(104vmin, 1120px)',
           }}
         >
           {/* Glow backdrop */}
@@ -198,6 +202,35 @@ export default function HandCeremony() {
 
       <Fireworks active={launched} />
       <CelebrationOverlay active={launched} onReset={reset} />
+      </div>
+
+      <Link
+        href="/"
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-colors"
+        style={{ zIndex: 30, color: 'rgba(255,255,255,0.65)' }}
+      >
+        <span>←</span> Back
+      </Link>
+
+      <style>{`
+        .portrait-stage {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
+
+        @media (orientation: landscape) {
+          .portrait-stage {
+            inset: auto;
+            left: 50%;
+            top: 50%;
+            width: 100vh;
+            height: 100vw;
+            transform: translate(-50%, -50%) rotate(90deg);
+            transform-origin: center;
+          }
+        }
+      `}</style>
     </div>
   )
 }
