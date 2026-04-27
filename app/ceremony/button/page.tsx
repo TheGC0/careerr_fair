@@ -8,15 +8,22 @@ import CelebrationOverlay from '@/app/components/CelebrationOverlay'
 export default function ButtonCeremony() {
   const [pressed, setPressed] = useState(false)
   const [launched, setLaunched] = useState(false)
+  const [holdProgress, setHoldProgress] = useState(0)
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([])
   const launchedRef = useRef(false)
+  const holdProgressRef = useRef(0)
+  const holdTimerRef = useRef<number | null>(null)
   const nextRippleId = useRef(0)
+  const processingTicks = Array.from({ length: 72 }, (_, i) => i)
+  const activeTicks = Math.ceil((holdProgress / 100) * processingTicks.length)
 
-  const triggerPress = useCallback((clientX?: number, clientY?: number) => {
-    if (launchedRef.current) return
-    setPressed(true)
+  const clearHoldTimer = useCallback(() => {
+    if (holdTimerRef.current === null) return
+    window.clearInterval(holdTimerRef.current)
+    holdTimerRef.current = null
+  }, [])
 
-    // Add ripple at touch/click position (or center)
+  const addRipple = useCallback((clientX?: number, clientY?: number) => {
     const btn = document.getElementById('open-btn')
     const rect = btn?.getBoundingClientRect()
     const cx = clientX !== undefined && rect ? clientX - rect.left : (rect ? rect.width / 2 : 0)
@@ -25,63 +32,84 @@ export default function ButtonCeremony() {
     const id = nextRippleId.current++
     setRipples(r => [...r, { id, x: cx, y: cy }])
     setTimeout(() => setRipples(r => r.filter(rp => rp.id !== id)), 700)
-
-    setTimeout(() => {
-      setPressed(false)
-      launchedRef.current = true
-      setLaunched(true)
-    }, 320)
   }, [])
 
-  // Touch handler for iPad
-  useEffect(() => {
-    const btn = document.getElementById('open-btn')!
+  const completeHold = useCallback(() => {
+    if (launchedRef.current) return
+    clearHoldTimer()
+    holdProgressRef.current = 100
+    setHoldProgress(100)
+    setPressed(false)
+    launchedRef.current = true
+    setLaunched(true)
+  }, [clearHoldTimer])
 
-    const onTouch = (e: TouchEvent) => {
-      e.preventDefault()
+  const startHold = useCallback((clientX?: number, clientY?: number) => {
+    if (launchedRef.current) return
+    clearHoldTimer()
+    holdProgressRef.current = 0
+    setHoldProgress(0)
+    setPressed(true)
+    addRipple(clientX, clientY)
+
+    holdTimerRef.current = window.setInterval(() => {
       if (launchedRef.current) return
-      const t = e.touches[0] ?? e.changedTouches[0]
-      triggerPress(t.clientX, t.clientY)
-    }
+      const next = Math.min(100, holdProgressRef.current + 1.8)
+      holdProgressRef.current = next
+      setHoldProgress(Math.round(next))
 
-    btn.addEventListener('touchstart', onTouch, { passive: false })
-    return () => btn.removeEventListener('touchstart', onTouch)
-  }, [triggerPress])
+      if (next >= 100) completeHold()
+    }, 30)
+  }, [addRipple, clearHoldTimer, completeHold])
+
+  const cancelHold = useCallback(() => {
+    clearHoldTimer()
+    if (launchedRef.current) return
+    holdProgressRef.current = 0
+    setHoldProgress(0)
+    setPressed(false)
+  }, [clearHoldTimer])
+
+  useEffect(() => clearHoldTimer, [clearHoldTimer])
 
   const reset = useCallback(() => {
+    clearHoldTimer()
     launchedRef.current = false
+    holdProgressRef.current = 0
     setLaunched(false)
     setPressed(false)
+    setHoldProgress(0)
     setRipples([])
-  }, [])
+  }, [clearHoldTimer])
 
   return (
     <div
       className="fixed inset-0 overflow-hidden select-none flex flex-col items-center justify-center"
       style={{
-        background: 'radial-gradient(ellipse at 50% 55%, #0b3d30 0%, #041510 100%)',
+        background: 'linear-gradient(135deg, #008359 0%, #106466 50%, #4e99ae 100%)',
         touchAction: 'none',
       }}
     >
-      {/* Ambient blobs */}
-      <div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 700, height: 700,
-          top: -200, right: -200,
-          background: 'radial-gradient(circle, rgba(240,192,48,0.05) 0%, transparent 65%)',
-          animation: 'ambient-drift 14s ease-in-out infinite',
-        }}
-      />
-      <div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 500, height: 500,
-          bottom: -100, left: -100,
-          background: 'radial-gradient(circle, rgba(13,184,144,0.07) 0%, transparent 65%)',
-          animation: 'ambient-drift 10s ease-in-out infinite reverse',
-        }}
-      />
+      {/* Decorative arcs */}
+      <svg className="absolute top-0 right-0 pointer-events-none" width="160" height="160" viewBox="0 0 160 160">
+        <circle cx="160" cy="0" r="100" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"/>
+        <circle cx="160" cy="0" r="70"  fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+      </svg>
+      <svg className="absolute bottom-0 left-0 pointer-events-none" width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="0" cy="140" r="90"  fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1.5"/>
+        <circle cx="0" cy="140" r="60"  fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
+      </svg>
+      {/* Dot grids */}
+      <svg className="absolute top-14 right-10 pointer-events-none" width="44" height="44" viewBox="0 0 44 44">
+        {[0,16,32].map(x => [0,16,32].map(y => (
+          <circle key={`${x}${y}`} cx={x+6} cy={y+6} r="2.5" fill="rgba(255,255,255,0.22)" />
+        )))}
+      </svg>
+      <svg className="absolute bottom-14 left-10 pointer-events-none" width="44" height="44" viewBox="0 0 44 44">
+        {[0,16,32].map(x => [0,16].map(y => (
+          <circle key={`${x}${y}`} cx={x+6} cy={y+6} r="2.5" fill="rgba(255,255,255,0.18)" />
+        )))}
+      </svg>
 
       {/* Back button */}
       <Link
@@ -127,74 +155,137 @@ export default function ButtonCeremony() {
       />
 
       {/* The Button */}
-      <button
-        id="open-btn"
-        onClick={e => triggerPress(e.clientX, e.clientY)}
-        disabled={launched}
-        className="relative rounded-full overflow-hidden"
-        style={{
-          width: 240,
-          height: 240,
-          background: pressed
-            ? 'radial-gradient(circle at 40% 35%, #c8a020, #0a6050)'
-            : 'radial-gradient(circle at 40% 35%, #f0c030, #0db890 60%, #0a5040)',
-          boxShadow: pressed
-            ? '0 4px 20px rgba(0,0,0,0.6), inset 0 4px 16px rgba(0,0,0,0.4), 0 0 20px rgba(240,192,48,0.2)'
-            : '0 12px 40px rgba(0,0,0,0.5), inset 0 -4px 12px rgba(0,0,0,0.3), 0 0 0 2px rgba(240,192,48,0.3)',
-          transform: pressed ? 'scale(0.94) translateY(4px)' : 'scale(1) translateY(0)',
-          transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
-          animation: !launched && !pressed ? 'btn-glow 2.5s ease-in-out infinite' : 'none',
-          cursor: launched ? 'default' : 'pointer',
-          border: 'none',
-          outline: 'none',
-          touchAction: 'none',
-        }}
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: 360, height: 360 }}
       >
-        {/* Ripple effects */}
-        {ripples.map(rp => (
-          <span
-            key={rp.id}
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              left: rp.x - 12,
-              top: rp.y - 12,
-              width: 24,
-              height: 24,
-              background: 'rgba(255,255,255,0.6)',
-              animation: 'ripple-out 0.65s ease-out forwards',
-            }}
-          />
-        ))}
-
-        {/* Button face */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          {/* Top shine */}
+        {!launched && (
           <div
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              width: '65%', height: '35%',
-              top: '10%',
-              background: 'radial-gradient(ellipse, rgba(255,255,255,0.25) 0%, transparent 80%)',
-            }}
-          />
+            className={`processing-ring ${pressed ? 'processing-ring-active' : ''}`}
+            aria-hidden="true"
+          >
+            <div className="processing-ring-ticks">
+              {processingTicks.map(tick => (
+                <span
+                  key={tick}
+                  style={{
+                    opacity: tick < activeTicks ? 0.95 : 0.14,
+                    background: tick < activeTicks
+                      ? 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(240,192,48,0.76))'
+                      : 'linear-gradient(180deg, rgba(234,255,251,0.42), rgba(126,255,229,0.14))',
+                    boxShadow: tick < activeTicks ? '0 0 12px rgba(240,192,48,0.55)' : 'none',
+                    transform: `rotate(${tick * 5}deg) translateY(-158px)`,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="processing-ring-core" />
+          </div>
+        )}
 
-          <span style={{ fontSize: 52, lineHeight: 1, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
-            🏁
-          </span>
-          <span
-            className="font-bold text-white"
-            style={{ fontSize: 18, direction: 'rtl', textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}
-          >
-            افتح المعرض
-          </span>
-          <span
-            className="font-medium text-white/75"
-            style={{ fontSize: 11, letterSpacing: '0.15em', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
-          >
-            OPEN THE FAIR
-          </span>
-        </div>
-      </button>
+        <button
+          id="open-btn"
+          onPointerDown={e => {
+            if (e.pointerType === 'mouse' && e.button !== 0) return
+            e.preventDefault()
+            e.currentTarget.setPointerCapture(e.pointerId)
+            startHold(e.clientX, e.clientY)
+          }}
+          onPointerUp={e => {
+            e.preventDefault()
+            if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+              e.currentTarget.releasePointerCapture(e.pointerId)
+            }
+            cancelHold()
+          }}
+          onPointerCancel={cancelHold}
+          onLostPointerCapture={cancelHold}
+          onKeyDown={e => {
+            if (e.repeat || (e.key !== ' ' && e.key !== 'Enter')) return
+            e.preventDefault()
+            startHold()
+          }}
+          onKeyUp={e => {
+            if (e.key !== ' ' && e.key !== 'Enter') return
+            e.preventDefault()
+            cancelHold()
+          }}
+          disabled={launched}
+          aria-busy={pressed}
+          aria-label={`Hold to open the fair. ${holdProgress} percent complete.`}
+          className="relative rounded-full overflow-hidden"
+          style={{
+            width: 240,
+            height: 240,
+            background: pressed
+              ? 'radial-gradient(circle at 40% 35%, #c8a020, #0a6050)'
+              : 'radial-gradient(circle at 40% 35%, #f0c030, #0db890 60%, #0a5040)',
+            boxShadow: pressed
+              ? '0 4px 20px rgba(0,0,0,0.6), inset 0 4px 16px rgba(0,0,0,0.4), 0 0 20px rgba(240,192,48,0.2)'
+              : '0 12px 40px rgba(0,0,0,0.5), inset 0 -4px 12px rgba(0,0,0,0.3), 0 0 0 2px rgba(240,192,48,0.3)',
+            transform: pressed ? 'scale(0.94) translateY(4px)' : 'scale(1) translateY(0)',
+            transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
+            animation: !launched && !pressed ? 'btn-glow 2.5s ease-in-out infinite' : 'none',
+            cursor: launched ? 'default' : 'pointer',
+            border: 'none',
+            outline: 'none',
+            touchAction: 'none',
+          }}
+        >
+          {/* Ripple effects */}
+          {ripples.map(rp => (
+            <span
+              key={rp.id}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                left: rp.x - 12,
+                top: rp.y - 12,
+                width: 24,
+                height: 24,
+                background: 'rgba(255,255,255,0.6)',
+                animation: 'ripple-out 0.65s ease-out forwards',
+              }}
+            />
+          ))}
+
+          {/* Button face */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+            {/* Top shine */}
+            <div
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: '65%', height: '35%',
+                top: '10%',
+                background: 'radial-gradient(ellipse, rgba(255,255,255,0.25) 0%, transparent 80%)',
+              }}
+            />
+
+            <span style={{ fontSize: 52, lineHeight: 1, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+              🏁
+            </span>
+            <span
+              className="font-bold text-white"
+              style={{ fontSize: 18, direction: 'rtl', textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}
+            >
+              افتح المعرض
+            </span>
+            <span
+              className="font-medium text-white/75"
+              style={{ fontSize: 11, letterSpacing: '0.15em', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
+            >
+              OPEN THE FAIR
+            </span>
+            {pressed && (
+              <span
+                className="font-bold text-white/80 tabular-nums"
+                style={{ fontSize: 16, textShadow: '0 1px 5px rgba(0,0,0,0.55)' }}
+              >
+                {holdProgress}%
+              </span>
+            )}
+          </div>
+        </button>
+      </div>
 
       {/* Prompt below button */}
       {!launched && (
@@ -202,7 +293,7 @@ export default function ButtonCeremony() {
           className="mt-10 text-sm tracking-wide"
           style={{ color: 'rgba(255,255,255,0.38)' }}
         >
-          {pressed ? 'Opening...' : 'Press the button to begin'}
+          {pressed ? `Keep holding... ${holdProgress}%` : 'Press and hold to begin'}
         </p>
       )}
 
@@ -210,6 +301,72 @@ export default function ButtonCeremony() {
       <CelebrationOverlay active={launched} onReset={reset} />
 
       <style>{`
+        .processing-ring {
+          position: absolute;
+          inset: 0;
+          border-radius: 9999px;
+          pointer-events: none;
+          filter: drop-shadow(0 0 14px rgba(126, 255, 229, 0.26));
+        }
+
+        .processing-ring::before {
+          content: '';
+          position: absolute;
+          inset: 28px;
+          border-radius: inherit;
+          border: 2px solid rgba(196, 255, 242, 0.32);
+          box-shadow:
+            0 0 30px rgba(126, 255, 229, 0.22),
+            inset 0 0 20px rgba(126, 255, 229, 0.08);
+        }
+
+        .processing-ring::after {
+          content: '';
+          position: absolute;
+          inset: 12px;
+          border-radius: inherit;
+          border: 1px solid rgba(196, 255, 242, 0.13);
+        }
+
+        .processing-ring-ticks {
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+        }
+
+        .processing-ring-ticks span {
+          position: absolute;
+          left: calc(50% - 2px);
+          top: calc(50% - 11px);
+          width: 4px;
+          height: 22px;
+          border-radius: 9999px;
+          transform-origin: 2px 11px;
+          transition: opacity 0.12s linear, background 0.12s linear, box-shadow 0.12s linear;
+        }
+
+        .processing-ring-core {
+          position: absolute;
+          inset: 48px;
+          border-radius: inherit;
+          background:
+            radial-gradient(circle, transparent 58%, rgba(126, 255, 229, 0.1) 59%, transparent 66%),
+            conic-gradient(from 0deg, transparent 0deg, rgba(126, 255, 229, 0.18) 36deg, transparent 92deg);
+          animation: processing-core-spin 3.4s linear infinite;
+        }
+
+        .processing-ring-active .processing-ring-core {
+          animation-duration: 0.9s;
+        }
+
+        @keyframes processing-sweep {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes processing-core-spin {
+          to { transform: rotate(-360deg); }
+        }
+
         @keyframes ripple-out {
           0%   { transform: scale(1); opacity: 0.7; }
           100% { transform: scale(18); opacity: 0; }

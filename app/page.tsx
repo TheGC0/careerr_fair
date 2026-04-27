@@ -6,20 +6,29 @@ export default function Home() {
     <div
       className="min-h-screen flex flex-col items-center justify-center px-6 py-16 select-none"
       style={{
-        background: 'radial-gradient(ellipse at 50% 40%, #0c3d2e 0%, #041510 100%)',
+        background: 'linear-gradient(135deg, #008359 0%, #106466 50%, #4e99ae 100%)',
       }}
     >
-      {/* Ambient decorative blob */}
-      <div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 500, height: 500,
-          top: -100, left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'radial-gradient(circle, rgba(240,192,48,0.07) 0%, transparent 70%)',
-          animation: 'ambient-drift 14s ease-in-out infinite',
-        }}
-      />
+      {/* Decorative arcs */}
+      <svg className="absolute top-0 right-0 pointer-events-none" width="180" height="180" viewBox="0 0 180 180">
+        <circle cx="180" cy="0" r="120" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"/>
+        <circle cx="180" cy="0" r="85"  fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+      </svg>
+      <svg className="absolute bottom-0 left-0 pointer-events-none" width="160" height="160" viewBox="0 0 160 160">
+        <circle cx="0" cy="160" r="100" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1.5"/>
+        <circle cx="0" cy="160" r="68"  fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
+      </svg>
+      {/* Dot grids */}
+      <svg className="absolute top-16 right-12 pointer-events-none" width="44" height="44" viewBox="0 0 44 44">
+        {[0,16,32].map(x => [0,16,32].map(y => (
+          <circle key={`${x}${y}`} cx={x+6} cy={y+6} r="2.5" fill="rgba(255,255,255,0.22)" />
+        )))}
+      </svg>
+      <svg className="absolute bottom-16 left-12 pointer-events-none" width="44" height="44" viewBox="0 0 44 44">
+        {[0,16,32].map(x => [0,16].map(y => (
+          <circle key={`${x}${y}`} cx={x+6} cy={y+6} r="2.5" fill="rgba(255,255,255,0.18)" />
+        )))}
+      </svg>
 
       {/* Fullscreen button — top right */}
       <div className="absolute top-6 right-6" style={{ zIndex: 5 }}>
