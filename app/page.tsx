@@ -111,9 +111,9 @@ export default function Home() {
             className="text-xs leading-relaxed"
             style={{ color: 'rgba(255,255,255,0.35)', direction: 'rtl' }}
           >
-            ضع ثلاثة أصابع على الشاشة
+            ضع راحة يدك على الشاشة
             <br />
-            <span style={{ direction: 'ltr', display: 'block' }}>Place three fingertips on screen</span>
+            <span style={{ direction: 'ltr', display: 'block' }}>Place your palm on screen</span>
           </p>
 
           <div
@@ -124,7 +124,7 @@ export default function Home() {
               color: '#0db890',
             }}
           >
-            Finger Hold
+            Palm Hold
           </div>
         </Link>
 

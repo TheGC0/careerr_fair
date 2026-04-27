@@ -43,6 +43,8 @@ export default function ButtonCeremony() {
     setPressed(false)
     launchedRef.current = true
     setLaunched(true)
+    // Signal the video screen to play
+    fetch('/api/ceremony', { method: 'POST' }).catch(() => {})
   }, [clearHoldTimer])
 
   const startHold = useCallback((clientX?: number, clientY?: number) => {
@@ -139,7 +141,7 @@ export default function ButtonCeremony() {
         <div
           className="absolute rounded-full pointer-events-none"
           style={{
-            width: 340, height: 340,
+            width: 430, height: 430,
             border: '1px solid rgba(240,192,48,0.1)',
             animation: 'pulse-ring 3s ease-in-out infinite',
           }}
@@ -147,7 +149,7 @@ export default function ButtonCeremony() {
         <div
           className="absolute rounded-full pointer-events-none"
           style={{
-            width: 400, height: 400,
+            width: 500, height: 500,
             border: '1px solid rgba(240,192,48,0.06)',
             animation: 'pulse-ring 3s ease-in-out infinite 1s',
           }}
@@ -156,7 +158,7 @@ export default function ButtonCeremony() {
         {/* The Button */}
         <div
           className="relative flex items-center justify-center"
-          style={{ width: 360, height: 360 }}
+          style={{ width: 440, height: 440 }}
         >
           {!launched && (
             <div
@@ -173,7 +175,7 @@ export default function ButtonCeremony() {
                         ? 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(240,192,48,0.76))'
                         : 'linear-gradient(180deg, rgba(234,255,251,0.42), rgba(126,255,229,0.14))',
                       boxShadow: tick < activeTicks ? '0 0 12px rgba(240,192,48,0.55)' : 'none',
-                      transform: `rotate(${tick * 5}deg) translateY(-158px)`,
+                      transform: `rotate(${tick * 5}deg) translateY(-194px)`,
                     }}
                   />
                 ))}
@@ -214,8 +216,8 @@ export default function ButtonCeremony() {
             aria-label={`Hold to open the fair. ${holdProgress} percent complete.`}
             className="relative rounded-full overflow-hidden"
             style={{
-              width: 240,
-              height: 240,
+              width: 300,
+              height: 300,
               background: pressed
                 ? 'radial-gradient(circle at 40% 35%, #c8a020, #0a6050)'
                 : 'radial-gradient(circle at 40% 35%, #f0c030, #0db890 60%, #0a5040)',
@@ -268,7 +270,7 @@ export default function ButtonCeremony() {
       {!launched && pressed && (
         <div
           className="absolute left-0 right-0 h-5 flex items-center justify-center"
-          style={{ top: 'calc(50% + 210px)', zIndex: 2 }}
+          style={{ top: 'calc(50% + 255px)', zIndex: 2 }}
           aria-live="polite"
         >
           <p
