@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import Fireworks from '@/app/components/Fireworks'
 import CelebrationOverlay from '@/app/components/CelebrationOverlay'
@@ -207,13 +206,13 @@ export default function HandCeremony() {
       </div>
 
       {!launched && (
-        <Link
+        <a
           href="/"
           className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-colors"
           style={{ zIndex: 30, color: 'rgba(255,255,255,0.65)' }}
         >
           <span>←</span> Back
-        </Link>
+        </a>
       )}
 
       <Fireworks active={launched} />

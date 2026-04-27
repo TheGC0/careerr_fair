@@ -7,21 +7,24 @@ interface Props {
   onReset?: () => void
 }
 
-export default function CelebrationOverlay({ active }: Props) {
+export default function CelebrationOverlay({ active, onReset }: Props) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     if (!active) { setVisible(false); return }
-    const t = setTimeout(() => setVisible(true), 500)
-    return () => clearTimeout(t)
-  }, [active])
+    const show = setTimeout(() => setVisible(true), 500)
+    // Auto-dismiss after 7 seconds so the button can be used again
+    const dismiss = setTimeout(() => onReset?.(), 7000)
+    return () => { clearTimeout(show); clearTimeout(dismiss) }
+  }, [active, onReset])
 
   if (!active) return null
 
   return (
     <div
       className="fixed inset-0 flex flex-col items-center justify-center"
-      style={{ zIndex: 20, background: 'rgba(3, 14, 11, 0.72)', backdropFilter: 'blur(2px)' }}
+      style={{ zIndex: 20, background: 'rgba(3, 14, 11, 0.72)', backdropFilter: 'blur(2px)', cursor: 'pointer' }}
+      onClick={() => onReset?.()}
     >
       <div
         className="flex flex-col items-center gap-5 text-center px-8"

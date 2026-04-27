@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import Fireworks from '@/app/components/Fireworks'
 import CelebrationOverlay from '@/app/components/CelebrationOverlay'
@@ -115,13 +114,13 @@ export default function ButtonCeremony() {
       </svg>
 
       {/* Back button */}
-      <Link
+      <a
         href="/"
         className="absolute top-6 left-6 flex items-center gap-2 text-white/40 hover:text-white/70 transition-colors text-sm"
         style={{ zIndex: 5 }}
       >
         <span>←</span> Back
-      </Link>
+      </a>
 
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 text-center pt-7 pointer-events-none" style={{ zIndex: 2 }}>
