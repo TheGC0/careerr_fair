@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 
-type Stage = 'waiting' | 'tapToPlay' | 'playing' | 'done'
+type Stage = 'waiting' | 'tapToPlay' | 'playing'
 
 export default function VideoScreen() {
   const [stage, setStage] = useState<Stage>('waiting')
@@ -38,7 +38,7 @@ export default function VideoScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const isPreVideo = stage !== 'playing'
+  const isPreVideo = stage === 'waiting' || stage === 'tapToPlay'
 
   return (
     <div
@@ -72,21 +72,11 @@ export default function VideoScreen() {
             style={{ width: 'min(40vw, 480px)', opacity: 0.9 }}
           />
 
-          {stage === 'done' && (
-            <div className="flex flex-col items-center gap-3 mt-2">
-              <p className="text-3xl font-bold" style={{ color: '#f0c030', textShadow: '0 0 24px rgba(240,192,48,0.7)', direction: 'rtl' }}>
-                يُفتتح معرض التوظيف
-              </p>
-              <p className="text-lg" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Grand Opening — KFUPM Career Fair 2026
-              </p>
-            </div>
-          )}
         </div>
       )}
 
       {/* Status bar — bottom of screen */}
-      {(stage === 'waiting') && (
+      {stage === 'waiting' && (
         <div className="absolute bottom-10 left-0 right-0 flex flex-col items-center gap-3 pointer-events-none">
           <div style={{
             width: 12, height: 12, borderRadius: '50%',
@@ -127,7 +117,7 @@ export default function VideoScreen() {
       {/* Video */}
       <video
         ref={videoRef}
-        src="/video.MP4"
+        src="/Career Fair Intro 2.mp4"
         playsInline
         preload="auto"
         className="absolute inset-0 w-full h-full"
@@ -137,7 +127,6 @@ export default function VideoScreen() {
           transition: 'opacity 0.5s ease',
           pointerEvents: 'none',
         }}
-        onEnded={() => setStage('done')}
       />
     </div>
   )
