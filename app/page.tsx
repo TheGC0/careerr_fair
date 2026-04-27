@@ -72,7 +72,7 @@ export default function Home() {
       </div>
 
       {/* Cards */}
-      <div className="flex flex-col sm:flex-row gap-6 w-full max-w-xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-4xl">
         {/* Hand ceremony card */}
         <Link
           href="/ceremony/hand"
@@ -179,6 +179,70 @@ export default function Home() {
             }}
           >
             Tap to Open
+          </div>
+        </Link>
+
+        {/* Two-button ceremony card */}
+        <Link
+          href="/ceremony/two-buttons"
+          className="group flex-1 rounded-3xl overflow-hidden relative flex flex-col items-center justify-center gap-4 py-12 px-6 text-center transition-all duration-300"
+          style={{
+            background: 'linear-gradient(135deg, rgba(78,153,174,0.14) 0%, rgba(4,21,16,0.5) 100%)',
+            border: '1px solid rgba(126,255,229,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            textDecoration: 'none',
+          }}
+        >
+          <div
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-3xl"
+            style={{ background: 'radial-gradient(ellipse at center, rgba(126,255,229,0.12) 0%, transparent 70%)' }}
+          />
+
+          <div className="relative h-20 w-28 transition-transform duration-300 group-hover:scale-110">
+            <span
+              className="absolute left-2 top-3 h-14 w-14 rounded-full"
+              style={{
+                background: 'radial-gradient(circle at 40% 35%, #f0c030, #0db890 60%, #0a5040)',
+                boxShadow: '0 0 12px rgba(126,255,229,0.35), inset 0 -3px 8px rgba(0,0,0,0.28)',
+              }}
+            />
+            <span
+              className="absolute right-2 top-3 h-14 w-14 rounded-full"
+              style={{
+                background: 'radial-gradient(circle at 40% 35%, #f0c030, #0db890 60%, #0a5040)',
+                boxShadow: '0 0 12px rgba(126,255,229,0.35), inset 0 -3px 8px rgba(0,0,0,0.28)',
+              }}
+            />
+          </div>
+
+          <div>
+            <p
+              className="text-lg font-semibold text-white mb-1"
+              style={{ direction: 'rtl' }}
+            >
+              افتتاح مزدوج
+            </p>
+            <p className="text-sm font-medium text-white/70">Two-Button Ceremony</p>
+          </div>
+
+          <p
+            className="text-xs leading-relaxed"
+            style={{ color: 'rgba(255,255,255,0.35)', direction: 'rtl' }}
+          >
+            اضغط الزرين معًا
+            <br />
+            <span style={{ direction: 'ltr', display: 'block' }}>Hold both buttons together</span>
+          </p>
+
+          <div
+            className="mt-2 px-5 py-2 rounded-full text-xs font-medium transition-all duration-200"
+            style={{
+              background: 'rgba(126,255,229,0.12)',
+              border: '1px solid rgba(126,255,229,0.25)',
+              color: '#a8fff0',
+            }}
+          >
+            Dual Hold
           </div>
         </Link>
       </div>

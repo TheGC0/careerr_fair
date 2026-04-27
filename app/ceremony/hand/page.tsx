@@ -139,8 +139,8 @@ export default function HandCeremony() {
         <div
           className="relative"
           style={{
-            width: 'min(104vmin, 1120px)',
-            height: 'min(104vmin, 1120px)',
+            width: 'min(76vmin, 840px)',
+            height: 'min(76vmin, 840px)',
           }}
         >
           {/* Glow backdrop */}
@@ -200,17 +200,20 @@ export default function HandCeremony() {
         </div>
       )}
 
-      <Fireworks active={launched} />
-      <CelebrationOverlay active={launched} onReset={reset} />
       </div>
 
-      <Link
-        href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-colors"
-        style={{ zIndex: 30, color: 'rgba(255,255,255,0.65)' }}
-      >
-        <span>←</span> Back
-      </Link>
+      {!launched && (
+        <Link
+          href="/"
+          className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-colors"
+          style={{ zIndex: 30, color: 'rgba(255,255,255,0.65)' }}
+        >
+          <span>←</span> Back
+        </Link>
+      )}
+
+      <Fireworks active={launched} />
+      <CelebrationOverlay active={launched} onReset={reset} />
 
       <style>{`
         .portrait-stage {

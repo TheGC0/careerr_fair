@@ -122,7 +122,7 @@ export default function ButtonCeremony() {
       </Link>
 
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 text-center pt-10">
+      <div className="absolute top-0 left-0 right-0 text-center pt-7 pointer-events-none">
         <Image
           src="/Centered_Inverted.svg"
           alt="KFUPM Career Fair 2026 opening"
@@ -130,7 +130,7 @@ export default function ButtonCeremony() {
           height={166}
           priority
           className="mx-auto h-auto"
-          style={{ width: 'min(34vw, 300px)', opacity: 0.88 }}
+          style={{ width: 'min(26vw, 230px)', opacity: 0.88 }}
         />
       </div>
 
@@ -246,41 +246,18 @@ export default function ButtonCeremony() {
             />
           ))}
 
-          {/* Button face */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+          {/* Empty button face */}
+          <div className="absolute inset-0">
             {/* Top shine */}
             <div
               className="absolute rounded-full pointer-events-none"
               style={{
                 width: '65%', height: '35%',
+                left: '17.5%',
                 top: '10%',
                 background: 'radial-gradient(ellipse, rgba(255,255,255,0.25) 0%, transparent 80%)',
               }}
             />
-
-            <span style={{ fontSize: 52, lineHeight: 1, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
-              🏁
-            </span>
-            <span
-              className="font-bold text-white"
-              style={{ fontSize: 18, direction: 'rtl', textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}
-            >
-              افتح المعرض
-            </span>
-            <span
-              className="font-medium text-white/75"
-              style={{ fontSize: 11, letterSpacing: '0.15em', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
-            >
-              OPEN THE FAIR
-            </span>
-            {pressed && (
-              <span
-                className="font-bold text-white/80 tabular-nums"
-                style={{ fontSize: 16, textShadow: '0 1px 5px rgba(0,0,0,0.55)' }}
-              >
-                {holdProgress}%
-              </span>
-            )}
           </div>
         </button>
       </div>
