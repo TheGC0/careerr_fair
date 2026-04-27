@@ -4,9 +4,9 @@ import FullscreenButton from '@/app/components/FullscreenButton'
 export default function Home() {
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-6 py-16 select-none"
+      className="min-h-[100dvh] flex flex-col items-center justify-center px-6 py-16 select-none"
       style={{
-        background: 'linear-gradient(135deg, #008359 0%, #106466 50%, #4e99ae 100%)',
+        background: 'var(--ceremony-background)',
       }}
     >
       {/* Decorative arcs */}
@@ -111,9 +111,9 @@ export default function Home() {
             className="text-xs leading-relaxed"
             style={{ color: 'rgba(255,255,255,0.35)', direction: 'rtl' }}
           >
-            ضع يدك الكاملة على الشاشة
+            ضع ثلاثة أصابع على الشاشة
             <br />
-            <span style={{ direction: 'ltr', display: 'block' }}>Place your full hand on screen</span>
+            <span style={{ direction: 'ltr', display: 'block' }}>Place three fingertips on screen</span>
           </p>
 
           <div
@@ -124,7 +124,7 @@ export default function Home() {
               color: '#0db890',
             }}
           >
-            Touch &amp; Hold
+            Finger Hold
           </div>
         </Link>
 

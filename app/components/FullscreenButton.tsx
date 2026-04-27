@@ -1,9 +1,27 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
+
+function isIPad() {
+  return /iPad/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
+function canUseAppFullscreen() {
+  if (typeof document === 'undefined') return false
+  return !isIPad() && document.fullscreenEnabled
+}
+
+function subscribeToFullscreenAvailability() {
+  return () => {}
+}
 
 export default function FullscreenButton() {
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const canShowButton = useSyncExternalStore(
+    subscribeToFullscreenAvailability,
+    canUseAppFullscreen,
+    () => false
+  )
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement)
@@ -18,6 +36,8 @@ export default function FullscreenButton() {
       document.exitFullscreen?.()
     }
   }
+
+  if (!canShowButton) return null
 
   return (
     <button

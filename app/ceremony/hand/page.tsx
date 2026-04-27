@@ -11,6 +11,17 @@ interface TouchPoint { id: number; x: number; y: number }
 
 // KFUPM brand gradient — matches the ceremony slide background
 const BG = 'linear-gradient(135deg, #008359 0%, #106466 50%, #4e99ae 100%)'
+const REQUIRED_FINGERS = 3
+const MAX_TRACKED_FINGERS = 5
+const PALM_RADIUS_LIMIT = 42
+
+function isFingerTouch(touch: Touch) {
+  const radiusX = touch.radiusX || 0
+  const radiusY = touch.radiusY || 0
+  if (radiusX === 0 && radiusY === 0) return true
+
+  return Math.max(radiusX, radiusY) <= PALM_RADIUS_LIMIT
+}
 
 export default function HandCeremony() {
   const [touchPoints, setTouchPoints] = useState<TouchPoint[]>([])
@@ -25,7 +36,7 @@ export default function HandCeremony() {
     const id = setInterval(() => {
       if (launchedRef.current) return
       const count = touchCountRef.current
-      if (count >= 3) {
+      if (count >= REQUIRED_FINGERS) {
         const rate = count >= 5 ? 2.8 : count >= 4 ? 2.2 : 1.6
         progressRef.current = Math.min(100, progressRef.current + rate)
       } else {
@@ -47,11 +58,14 @@ export default function HandCeremony() {
       if (target instanceof Element && target.closest('a, button')) return
 
       e.preventDefault()
-      const pts: TouchPoint[] = Array.from(e.touches).map(t => ({
-        id: t.identifier,
-        x: window.innerWidth > window.innerHeight ? t.clientY : t.clientX,
-        y: window.innerWidth > window.innerHeight ? window.innerWidth - t.clientX : t.clientY,
-      }))
+      const pts: TouchPoint[] = Array.from(e.touches)
+        .filter(isFingerTouch)
+        .slice(0, MAX_TRACKED_FINGERS)
+        .map(t => ({
+          id: t.identifier,
+          x: window.innerWidth > window.innerHeight ? t.clientY : t.clientX,
+          y: window.innerWidth > window.innerHeight ? window.innerWidth - t.clientX : t.clientY,
+        }))
       touchCountRef.current = pts.length
       setTouchPoints(pts)
     }
@@ -74,7 +88,7 @@ export default function HandCeremony() {
     setLaunched(false); setProgress(0); setTouchPoints([])
   }, [])
 
-  const isActive   = touchPoints.length >= 3
+  const isActive   = touchPoints.length >= REQUIRED_FINGERS
   const accentColor = progress > 75 ? '#f0c030' : '#ffffff'
 
   return (
@@ -139,8 +153,8 @@ export default function HandCeremony() {
         <div
           className="relative"
           style={{
-            width: 'min(76vmin, 840px)',
-            height: 'min(76vmin, 840px)',
+            width: 'min(82vmin, 900px)',
+            height: 'min(82vmin, 900px)',
           }}
         >
           {/* Glow backdrop */}
@@ -153,19 +167,6 @@ export default function HandCeremony() {
             <HandScanImage progress={progress} isActive={isActive} />
           </div>
         </div>
-
-        {/* Instructions */}
-        {!launched && (
-          <div className="text-center space-y-1">
-            <p className="text-xl font-semibold transition-colors duration-300"
-              style={{ color: isActive ? '#f0c030' : 'rgba(255,255,255,0.9)', direction: 'rtl' }}>
-              {isActive ? 'استمر في الضغط...' : 'ضع يدك الكاملة هنا'}
-            </p>
-            <p className="text-sm text-white/50">
-              {isActive ? 'Keep holding to open the fair' : 'Place your full hand to open the fair'}
-            </p>
-          </div>
-        )}
 
         {/* Progress % */}
         {isActive && !launched && (
@@ -180,7 +181,7 @@ export default function HandCeremony() {
       {!launched && (
         <div className="absolute bottom-10 left-0 right-0 flex flex-col items-center gap-3">
           <div className="flex items-center gap-3">
-            {[1,2,3,4,5].map(i => (
+            {Array.from({ length: REQUIRED_FINGERS }, (_, i) => i + 1).map(i => (
               <div key={i} className="rounded-full transition-all duration-200"
                 style={{
                   width: 11, height: 11,
@@ -192,10 +193,10 @@ export default function HandCeremony() {
           </div>
           <p className="text-xs text-white/40">
             {touchPoints.length === 0
-              ? 'Touch the screen with your hand'
-              : touchPoints.length >= 3
-              ? 'Hand detected — hold steady'
-              : `${3 - touchPoints.length} more finger${3 - touchPoints.length !== 1 ? 's' : ''} needed`}
+              ? 'Touch with three fingertips'
+              : touchPoints.length >= REQUIRED_FINGERS
+              ? 'Fingertips detected - hold steady'
+              : `${REQUIRED_FINGERS - touchPoints.length} more finger${REQUIRED_FINGERS - touchPoints.length !== 1 ? 's' : ''} needed`}
           </p>
         </div>
       )}

@@ -85,7 +85,7 @@ export default function ButtonCeremony() {
 
   return (
     <div
-      className="fixed inset-0 overflow-hidden select-none flex flex-col items-center justify-center"
+      className="fixed inset-0 overflow-hidden select-none"
       style={{
         background: 'linear-gradient(135deg, #008359 0%, #106466 50%, #4e99ae 100%)',
         touchAction: 'none',
@@ -122,7 +122,7 @@ export default function ButtonCeremony() {
       </Link>
 
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 text-center pt-7 pointer-events-none">
+      <div className="absolute top-0 left-0 right-0 text-center pt-7 pointer-events-none" style={{ zIndex: 2 }}>
         <Image
           src="/Centered_Inverted.svg"
           alt="KFUPM Career Fair 2026 opening"
@@ -134,142 +134,150 @@ export default function ButtonCeremony() {
         />
       </div>
 
-      {/* Decorative ring behind button */}
-      <div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 340, height: 340,
-          border: '1px solid rgba(240,192,48,0.1)',
-          animation: 'pulse-ring 3s ease-in-out infinite',
-        }}
-      />
-      <div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 400, height: 400,
-          border: '1px solid rgba(240,192,48,0.06)',
-          animation: 'pulse-ring 3s ease-in-out infinite 1s',
-        }}
-      />
-
-      {/* The Button */}
-      <div
-        className="relative flex items-center justify-center"
-        style={{ width: 360, height: 360 }}
-      >
-        {!launched && (
-          <div
-            className={`processing-ring ${pressed ? 'processing-ring-active' : ''}`}
-            aria-hidden="true"
-          >
-            <div className="processing-ring-ticks">
-              {processingTicks.map(tick => (
-                <span
-                  key={tick}
-                  style={{
-                    opacity: tick < activeTicks ? 0.95 : 0.14,
-                    background: tick < activeTicks
-                      ? 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(240,192,48,0.76))'
-                      : 'linear-gradient(180deg, rgba(234,255,251,0.42), rgba(126,255,229,0.14))',
-                    boxShadow: tick < activeTicks ? '0 0 12px rgba(240,192,48,0.55)' : 'none',
-                    transform: `rotate(${tick * 5}deg) translateY(-158px)`,
-                  }}
-                />
-              ))}
-            </div>
-            <div className="processing-ring-core" />
-          </div>
-        )}
-
-        <button
-          id="open-btn"
-          onPointerDown={e => {
-            if (e.pointerType === 'mouse' && e.button !== 0) return
-            e.preventDefault()
-            e.currentTarget.setPointerCapture(e.pointerId)
-            startHold(e.clientX, e.clientY)
-          }}
-          onPointerUp={e => {
-            e.preventDefault()
-            if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-              e.currentTarget.releasePointerCapture(e.pointerId)
-            }
-            cancelHold()
-          }}
-          onPointerCancel={cancelHold}
-          onLostPointerCapture={cancelHold}
-          onKeyDown={e => {
-            if (e.repeat || (e.key !== ' ' && e.key !== 'Enter')) return
-            e.preventDefault()
-            startHold()
-          }}
-          onKeyUp={e => {
-            if (e.key !== ' ' && e.key !== 'Enter') return
-            e.preventDefault()
-            cancelHold()
-          }}
-          disabled={launched}
-          aria-busy={pressed}
-          aria-label={`Hold to open the fair. ${holdProgress} percent complete.`}
-          className="relative rounded-full overflow-hidden"
+      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 1 }}>
+        {/* Decorative ring behind button */}
+        <div
+          className="absolute rounded-full pointer-events-none"
           style={{
-            width: 240,
-            height: 240,
-            background: pressed
-              ? 'radial-gradient(circle at 40% 35%, #c8a020, #0a6050)'
-              : 'radial-gradient(circle at 40% 35%, #f0c030, #0db890 60%, #0a5040)',
-            boxShadow: pressed
-              ? '0 4px 20px rgba(0,0,0,0.6), inset 0 4px 16px rgba(0,0,0,0.4), 0 0 20px rgba(240,192,48,0.2)'
-              : '0 12px 40px rgba(0,0,0,0.5), inset 0 -4px 12px rgba(0,0,0,0.3), 0 0 0 2px rgba(240,192,48,0.3)',
-            transform: pressed ? 'scale(0.94) translateY(4px)' : 'scale(1) translateY(0)',
-            transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
-            animation: !launched && !pressed ? 'btn-glow 2.5s ease-in-out infinite' : 'none',
-            cursor: launched ? 'default' : 'pointer',
-            border: 'none',
-            outline: 'none',
-            touchAction: 'none',
+            width: 340, height: 340,
+            border: '1px solid rgba(240,192,48,0.1)',
+            animation: 'pulse-ring 3s ease-in-out infinite',
           }}
-        >
-          {/* Ripple effects */}
-          {ripples.map(rp => (
-            <span
-              key={rp.id}
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                left: rp.x - 12,
-                top: rp.y - 12,
-                width: 24,
-                height: 24,
-                background: 'rgba(255,255,255,0.6)',
-                animation: 'ripple-out 0.65s ease-out forwards',
-              }}
-            />
-          ))}
+        />
+        <div
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: 400, height: 400,
+            border: '1px solid rgba(240,192,48,0.06)',
+            animation: 'pulse-ring 3s ease-in-out infinite 1s',
+          }}
+        />
 
-          {/* Empty button face */}
-          <div className="absolute inset-0">
-            {/* Top shine */}
+        {/* The Button */}
+        <div
+          className="relative flex items-center justify-center"
+          style={{ width: 360, height: 360 }}
+        >
+          {!launched && (
             <div
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                width: '65%', height: '35%',
-                left: '17.5%',
-                top: '10%',
-                background: 'radial-gradient(ellipse, rgba(255,255,255,0.25) 0%, transparent 80%)',
-              }}
-            />
-          </div>
-        </button>
+              className={`processing-ring ${pressed ? 'processing-ring-active' : ''}`}
+              aria-hidden="true"
+            >
+              <div className="processing-ring-ticks">
+                {processingTicks.map(tick => (
+                  <span
+                    key={tick}
+                    style={{
+                      opacity: tick < activeTicks ? 0.95 : 0.14,
+                      background: tick < activeTicks
+                        ? 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(240,192,48,0.76))'
+                        : 'linear-gradient(180deg, rgba(234,255,251,0.42), rgba(126,255,229,0.14))',
+                      boxShadow: tick < activeTicks ? '0 0 12px rgba(240,192,48,0.55)' : 'none',
+                      transform: `rotate(${tick * 5}deg) translateY(-158px)`,
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="processing-ring-core" />
+            </div>
+          )}
+
+          <button
+            id="open-btn"
+            onPointerDown={e => {
+              if (e.pointerType === 'mouse' && e.button !== 0) return
+              e.preventDefault()
+              e.currentTarget.setPointerCapture(e.pointerId)
+              startHold(e.clientX, e.clientY)
+            }}
+            onPointerUp={e => {
+              e.preventDefault()
+              if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                e.currentTarget.releasePointerCapture(e.pointerId)
+              }
+              cancelHold()
+            }}
+            onPointerCancel={cancelHold}
+            onLostPointerCapture={cancelHold}
+            onKeyDown={e => {
+              if (e.repeat || (e.key !== ' ' && e.key !== 'Enter')) return
+              e.preventDefault()
+              startHold()
+            }}
+            onKeyUp={e => {
+              if (e.key !== ' ' && e.key !== 'Enter') return
+              e.preventDefault()
+              cancelHold()
+            }}
+            disabled={launched}
+            aria-busy={pressed}
+            aria-label={`Hold to open the fair. ${holdProgress} percent complete.`}
+            className="relative rounded-full overflow-hidden"
+            style={{
+              width: 240,
+              height: 240,
+              background: pressed
+                ? 'radial-gradient(circle at 40% 35%, #c8a020, #0a6050)'
+                : 'radial-gradient(circle at 40% 35%, #f0c030, #0db890 60%, #0a5040)',
+              boxShadow: pressed
+                ? '0 4px 20px rgba(0,0,0,0.6), inset 0 4px 16px rgba(0,0,0,0.4), 0 0 20px rgba(240,192,48,0.2)'
+                : '0 12px 40px rgba(0,0,0,0.5), inset 0 -4px 12px rgba(0,0,0,0.3), 0 0 0 2px rgba(240,192,48,0.3)',
+              transform: pressed ? 'scale(0.94) translateY(4px)' : 'scale(1) translateY(0)',
+              transition: 'transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease',
+              animation: !launched && !pressed ? 'btn-glow 2.5s ease-in-out infinite' : 'none',
+              cursor: launched ? 'default' : 'pointer',
+              border: 'none',
+              outline: 'none',
+              touchAction: 'none',
+            }}
+          >
+            {/* Ripple effects */}
+            {ripples.map(rp => (
+              <span
+                key={rp.id}
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  left: rp.x - 12,
+                  top: rp.y - 12,
+                  width: 24,
+                  height: 24,
+                  background: 'rgba(255,255,255,0.6)',
+                  animation: 'ripple-out 0.65s ease-out forwards',
+                }}
+              />
+            ))}
+
+            {/* Empty button face */}
+            <div className="absolute inset-0">
+              {/* Top shine */}
+              <div
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: '65%', height: '35%',
+                  left: '17.5%',
+                  top: '10%',
+                  background: 'radial-gradient(ellipse, rgba(255,255,255,0.25) 0%, transparent 80%)',
+                }}
+              />
+            </div>
+          </button>
+        </div>
       </div>
 
-      {/* Prompt below button */}
-      {!launched && (
-        <p
-          className="mt-10 text-sm tracking-wide"
-          style={{ color: 'rgba(255,255,255,0.38)' }}
+      {/* Hold progress below button */}
+      {!launched && pressed && (
+        <div
+          className="absolute left-0 right-0 h-5 flex items-center justify-center"
+          style={{ top: 'calc(50% + 210px)', zIndex: 2 }}
+          aria-live="polite"
         >
-          {pressed ? `Keep holding... ${holdProgress}%` : 'Press and hold to begin'}
-        </p>
+          <p
+            className="text-sm tracking-wide"
+            style={{ color: 'rgba(255,255,255,0.38)' }}
+          >
+            Keep holding... {holdProgress}%
+          </p>
+        </div>
       )}
 
       <Fireworks active={launched} />
