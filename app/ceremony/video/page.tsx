@@ -9,80 +9,91 @@ export default function VideoScreen() {
   const [connected, setConnected] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
+  // Force video to start buffering immediately on mount
+  useEffect(() => {
+    videoRef.current?.load()
+  }, [])
+
   const tryPlay = () => {
     const video = videoRef.current
     if (!video) return
 
-    // Reset to beginning
     video.currentTime = 0
     video.muted = true
 
-    // Switch stage only once the video is actually rendering frames,
-    // not just when play() resolves — prevents the black-screen gap.
-    const onPlaying = () => {
+    let settled = false
+    const settle = (success: boolean) => {
+      if (settled) return
+      settled = true
+      clearTimeout(fallbackTimer)
       video.removeEventListener('playing', onPlaying)
-      video.muted = false
-      setStage('playing')
+      if (success) {
+        video.muted = false
+        setStage('playing')
+      } else {
+        video.muted = false
+        setStage('tapToPlay')
+      }
     }
+
+    const onPlaying = () => settle(true)
     video.addEventListener('playing', onPlaying)
 
-    video.play().catch(() => {
-      video.removeEventListener('playing', onPlaying)
-      video.muted = false
-      setStage('tapToPlay')
-    })
+    // If 'playing' event hasn't fired within 1.5 s, switch anyway so we never get stuck
+    const fallbackTimer = setTimeout(() => settle(true), 1500)
+
+    video.play().catch(() => settle(false))
   }
 
   const tryPlayRef = useRef(tryPlay)
   useEffect(() => { tryPlayRef.current = tryPlay })
 
+  // SSE — EventSource auto-reconnects on drop
   useEffect(() => {
-    const es = new EventSource('/api/ceremony')
-    es.onopen = () => setConnected(true)
-    es.onerror = () => setConnected(false)
-    es.onmessage = (e) => {
-      if (e.data === 'launch') tryPlayRef.current()
+    let es: EventSource
+
+    const connect = () => {
+      es = new EventSource('/api/ceremony')
+      es.onopen  = () => setConnected(true)
+      es.onerror = () => {
+        setConnected(false)
+        // EventSource will retry automatically
+      }
+      es.onmessage = (e) => {
+        if (e.data === 'launch') tryPlayRef.current()
+      }
     }
-    return () => es.close()
+
+    connect()
+    return () => es?.close()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    <div className="fixed inset-0 select-none overflow-hidden">
-      {/* Background image — always mounted, fades out when video plays */}
-      <div
-        className="absolute inset-0"
-        style={{
-          opacity: stage === 'playing' ? 0 : 1,
-          transition: 'opacity 0.5s ease',
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/Slide_1.jpg"
-          alt=""
-          className="w-full h-full"
-          style={{ objectFit: 'cover' }}
-        />
-      </div>
-
-      {/* Connecting indicator — only shown when NOT connected */}
+    // CSS background-image renders instantly from cache — no img-load flash
+    <div
+      className="fixed inset-0 select-none overflow-hidden"
+      style={{
+        backgroundColor: '#0a2e22',
+        backgroundImage: stage !== 'playing' ? 'url(/Slide_1.jpg)' : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Connecting indicator */}
       {stage === 'waiting' && !connected && (
         <div
           className="absolute bottom-10 left-0 right-0 flex flex-col items-center gap-3 pointer-events-none"
           style={{ zIndex: 5 }}
         >
-          <div style={{
-            width: 10, height: 10, borderRadius: '50%',
-            background: '#666',
-          }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#666' }} />
           <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, letterSpacing: '0.3em' }}>
             CONNECTING…
           </span>
         </div>
       )}
 
-      {/* Tap-to-play fallback */}
+      {/* Tap-to-play fallback (browser blocked autoplay) */}
       {stage === 'tapToPlay' && (
         <button
           className="absolute inset-0 flex flex-col items-center justify-center gap-6"
@@ -115,8 +126,9 @@ export default function VideoScreen() {
         style={{
           objectFit: 'contain',
           opacity: stage === 'playing' ? 1 : 0,
-          transition: 'opacity 0.5s ease',
+          transition: 'opacity 0.4s ease',
           pointerEvents: 'none',
+          backgroundColor: '#000',
         }}
       />
     </div>
