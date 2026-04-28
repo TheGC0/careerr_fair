@@ -9,7 +9,7 @@ export default function VideoScreen() {
   const [connected, setConnected] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  // Force video to start buffering immediately on mount
+  // Start buffering immediately on mount so video is ready when signal arrives
   useEffect(() => {
     videoRef.current?.load()
   }, [])
@@ -21,60 +21,100 @@ export default function VideoScreen() {
     video.currentTime = 0
     video.muted = true
 
-    let settled = false
-    const settle = (success: boolean) => {
-      if (settled) return
-      settled = true
-      clearTimeout(fallbackTimer)
+    // Wait for the first real frame before switching stage — prevents black flash
+    const onPlaying = () => {
       video.removeEventListener('playing', onPlaying)
-      if (success) {
-        video.muted = false
-        setStage('playing')
-      } else {
-        video.muted = false
-        setStage('tapToPlay')
-      }
+      video.muted = false
+      setStage('playing')
     }
-
-    const onPlaying = () => settle(true)
     video.addEventListener('playing', onPlaying)
 
-    // If 'playing' event hasn't fired within 1.5 s, switch anyway so we never get stuck
-    const fallbackTimer = setTimeout(() => settle(true), 1500)
+    const doPlay = () => {
+      video.play().catch(() => {
+        video.removeEventListener('playing', onPlaying)
+        video.muted = false
+        setStage('tapToPlay')
+      })
+    }
 
-    video.play().catch(() => settle(false))
+    // If the video hasn't buffered enough yet, wait for canplay first
+    if (video.readyState >= 3) {
+      doPlay()
+    } else {
+      const onCanPlay = () => {
+        video.removeEventListener('canplay', onCanPlay)
+        doPlay()
+      }
+      video.addEventListener('canplay', onCanPlay)
+    }
   }
 
   const tryPlayRef = useRef(tryPlay)
   useEffect(() => { tryPlayRef.current = tryPlay })
 
-  // SSE — EventSource auto-reconnects on drop
   useEffect(() => {
     let es: EventSource
+    let reconnectTimer: ReturnType<typeof setTimeout>
+    let watchdogTimer: ReturnType<typeof setInterval>
+    let lastActivity = Date.now()
+    let alive = true
 
     const connect = () => {
+      if (!alive) return
+      try { es?.close() } catch {}
+
       es = new EventSource('/api/ceremony')
-      es.onopen  = () => setConnected(true)
+
+      es.onopen = () => {
+        lastActivity = Date.now()
+        setConnected(true)
+      }
+
+      // 'launch' comes as a default message event
+      es.onmessage = (e) => {
+        lastActivity = Date.now()
+        if (e.data === 'launch') tryPlayRef.current()
+      }
+
+      // Named ping event — just update liveness timestamp
+      es.addEventListener('ping', () => {
+        lastActivity = Date.now()
+      })
+
       es.onerror = () => {
         setConnected(false)
-        // EventSource will retry automatically
-      }
-      es.onmessage = (e) => {
-        if (e.data === 'launch') tryPlayRef.current()
+        es.close()
+        // Reconnect after 2 s
+        clearTimeout(reconnectTimer)
+        reconnectTimer = setTimeout(connect, 2000)
       }
     }
 
+    // Watchdog: if no ping/message for 25 s, force a fresh connection
+    watchdogTimer = setInterval(() => {
+      if (Date.now() - lastActivity > 25_000) {
+        setConnected(false)
+        clearTimeout(reconnectTimer)
+        connect()
+      }
+    }, 5_000)
+
     connect()
-    return () => es?.close()
+
+    return () => {
+      alive = false
+      clearTimeout(reconnectTimer)
+      clearInterval(watchdogTimer)
+      try { es?.close() } catch {}
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    // CSS background-image renders instantly from cache — no img-load flash
     <div
       className="fixed inset-0 select-none overflow-hidden"
       style={{
-        backgroundColor: '#0a2e22',
+        backgroundColor: '#000',
         backgroundImage: stage !== 'playing' ? 'url(/Slide_1.jpg)' : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -93,7 +133,7 @@ export default function VideoScreen() {
         </div>
       )}
 
-      {/* Tap-to-play fallback (browser blocked autoplay) */}
+      {/* Tap-to-play fallback */}
       {stage === 'tapToPlay' && (
         <button
           className="absolute inset-0 flex flex-col items-center justify-center gap-6"
@@ -116,7 +156,7 @@ export default function VideoScreen() {
         </button>
       )}
 
-      {/* Video */}
+      {/* Video — only visible once actually playing */}
       <video
         ref={videoRef}
         src="/My Movie.mp4"
@@ -128,7 +168,6 @@ export default function VideoScreen() {
           opacity: stage === 'playing' ? 1 : 0,
           transition: 'opacity 0.4s ease',
           pointerEvents: 'none',
-          backgroundColor: '#000',
         }}
       />
     </div>

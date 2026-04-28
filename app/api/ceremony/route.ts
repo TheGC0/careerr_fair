@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server'
 
-// globalThis survives hot-module reloads in Next.js dev mode;
-// a plain module-level Set gets re-instantiated on every reload.
 declare global {
   // eslint-disable-next-line no-var
   var _ceremonyClients: Set<(msg: string) => void>
 }
 globalThis._ceremonyClients ??= new Set()
 
-// Prevent Next.js from statically caching this route
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
@@ -27,14 +24,14 @@ export async function GET() {
       }
       globalThis._ceremonyClients.add(push)
 
-      // Keep the connection alive so proxies/browsers don't close it
+      // Named 'ping' event every 10 s — client uses this to detect silent drops
       pingTimer = setInterval(() => {
         try {
-          controller.enqueue(enc.encode(': ping\n\n'))
+          controller.enqueue(enc.encode('event: ping\ndata: \n\n'))
         } catch {
           cleanup()
         }
-      }, 15_000)
+      }, 10_000)
     },
     cancel() {
       cleanup()
@@ -53,15 +50,13 @@ export async function GET() {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no', // disable nginx/proxy buffering
+      'X-Accel-Buffering': 'no',
     },
   })
 }
 
 export async function POST() {
   const count = globalThis._ceremonyClients.size
-  globalThis._ceremonyClients.forEach(fn => {
-    try { fn('launch') } catch {}
-  })
+  globalThis._ceremonyClients.forEach(fn => { try { fn('launch') } catch {} })
   return NextResponse.json({ ok: true, notified: count })
 }
