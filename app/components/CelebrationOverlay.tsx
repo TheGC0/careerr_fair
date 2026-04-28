@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 interface Props {
   active: boolean
@@ -8,14 +8,11 @@ interface Props {
 }
 
 export default function CelebrationOverlay({ active, onReset }: Props) {
-  const [visible, setVisible] = useState(false)
-
   useEffect(() => {
-    if (!active) { setVisible(false); return }
-    const show = setTimeout(() => setVisible(true), 500)
+    if (!active) return
     // Auto-dismiss after 7 seconds so the button can be used again
     const dismiss = setTimeout(() => onReset?.(), 7000)
-    return () => { clearTimeout(show); clearTimeout(dismiss) }
+    return () => clearTimeout(dismiss)
   }, [active, onReset])
 
   if (!active) return null
@@ -29,9 +26,7 @@ export default function CelebrationOverlay({ active, onReset }: Props) {
       <div
         className="flex flex-col items-center gap-5 text-center px-8"
         style={{
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'translateY(0) scale(1)' : 'translateY(32px) scale(0.94)',
-          transition: 'opacity 0.7s ease, transform 0.7s ease',
+          animation: 'celebration-overlay-enter 0.7s ease 0.5s both',
         }}
       >
         {/* Decorative stars */}
@@ -97,6 +92,18 @@ export default function CelebrationOverlay({ active, onReset }: Props) {
         </p>
 
       </div>
+      <style>{`
+        @keyframes celebration-overlay-enter {
+          from {
+            opacity: 0;
+            transform: translateY(32px) scale(0.94);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+      `}</style>
     </div>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import Fireworks from '@/app/components/Fireworks'
 import CelebrationOverlay from '@/app/components/CelebrationOverlay'
 import HandScanImage from '@/app/components/HandScanImage'
@@ -208,13 +209,13 @@ export default function HandCeremony() {
       </div>
 
       {!launched && (
-        <a
+        <Link
           href="/"
           className="absolute top-6 left-6 flex items-center gap-2 text-sm transition-colors"
           style={{ zIndex: 30, color: 'rgba(255,255,255,0.65)' }}
         >
           <span>←</span> Back
-        </a>
+        </Link>
       )}
 
       <Fireworks active={launched} />

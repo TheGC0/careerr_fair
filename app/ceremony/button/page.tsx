@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import Fireworks from '@/app/components/Fireworks'
 import CelebrationOverlay from '@/app/components/CelebrationOverlay'
 
@@ -56,7 +57,7 @@ export default function ButtonCeremony() {
 
     holdTimerRef.current = window.setInterval(() => {
       if (launchedRef.current) return
-      const next = Math.min(100, holdProgressRef.current + 1.8)
+      const next = Math.min(100, holdProgressRef.current + 4)
       holdProgressRef.current = next
       setHoldProgress(Math.round(next))
 
@@ -114,13 +115,13 @@ export default function ButtonCeremony() {
       </svg>
 
       {/* Back button */}
-      <a
+      <Link
         href="/"
         className="absolute top-6 left-6 flex items-center gap-2 text-white/40 hover:text-white/70 transition-colors text-sm"
         style={{ zIndex: 5 }}
       >
         <span>←</span> Back
-      </a>
+      </Link>
 
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 text-center pt-7 pointer-events-none" style={{ zIndex: 2 }}>
