@@ -52,7 +52,7 @@ export default function CelebrationOverlay({ active, onReset }: Props) {
             textShadow: '0 0 40px rgba(240,192,48,0.6)',
           }}
         >
-          يُفتتح معرض التوظيف
+          افتتاح معرض التوظيف
         </h1>
 
         <div

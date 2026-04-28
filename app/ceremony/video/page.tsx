@@ -117,7 +117,7 @@ export default function VideoScreen() {
       {/* Video */}
       <video
         ref={videoRef}
-        src="/Career Fair Intro 2.mp4"
+        src="/My Movie.mp4"
         playsInline
         preload="auto"
         className="absolute inset-0 w-full h-full"

@@ -12,6 +12,9 @@ interface TouchPoint { id: number; x: number; y: number; size: number }
 const BG = 'linear-gradient(135deg, #008359 0%, #106466 50%, #4e99ae 100%)'
 const MAX_TRACKED_CONTACTS = 6
 const HAND_CONTACT_GRACE_MS = 180
+const HAND_SCAN_INTERVAL_MS = 50
+const HAND_SCAN_DURATION_MS = 3000
+const HAND_SCAN_PROGRESS_STEP = 100 / (HAND_SCAN_DURATION_MS / HAND_SCAN_INTERVAL_MS)
 
 function getTouchSize(touch: Touch) {
   const radiusX = touch.radiusX || 0
@@ -39,8 +42,7 @@ export default function HandCeremony() {
       setHandDetected(hasHandContact)
 
       if (hasHandContact) {
-        const rate = count >= 3 ? 2.8 : count >= 2 ? 2.2 : 1.8
-        progressRef.current = Math.min(100, progressRef.current + rate)
+        progressRef.current = Math.min(100, progressRef.current + HAND_SCAN_PROGRESS_STEP)
       } else {
         progressRef.current = Math.max(0, progressRef.current - 0.6)
       }
@@ -49,7 +51,7 @@ export default function HandCeremony() {
         launchedRef.current = true
         setLaunched(true)
       }
-    }, 50)
+    }, HAND_SCAN_INTERVAL_MS)
     return () => clearInterval(id)
   }, [])
 
