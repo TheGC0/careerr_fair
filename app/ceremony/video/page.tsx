@@ -13,10 +13,15 @@ export default function VideoScreen() {
     const video = videoRef.current
     if (!video) return
     video.currentTime = 0
-    video.muted = false
+    // Start muted — browsers always allow muted autoplay.
+    // Unmute immediately after play() resolves so audio plays from the start.
+    video.muted = true
     video.play().then(() => {
+      video.muted = false
       setStage('playing')
     }).catch(() => {
+      // Last resort fallback — should essentially never happen with muted start
+      video.muted = false
       setStage('tapToPlay')
     })
   }
